@@ -1,5 +1,3 @@
----
-
 ```markdown
 # 🐸 Telegram Bot — GIPHY Generator
 
