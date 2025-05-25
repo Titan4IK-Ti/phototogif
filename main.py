@@ -12,7 +12,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 bot = telebot.TeleBot('')
 
 # Ваш GIPHY API-ключ
-GIPHY_API_KEY = ''  # Замените на реальный ключ
+GIPHY_API_KEY = '' 
 
 def upload_to_giphy(gif_path):
     """Загружает GIF на GIPHY и возвращает URL."""
@@ -31,22 +31,18 @@ def upload_to_giphy(gif_path):
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
     try:
-        # Получаем файл фото (берем самое высокое качество)
         file_info = bot.get_file(message.photo[-1].file_id)
         downloaded_file = bot.download_file(file_info.file_path)
         
         file_suffix = str(message.message_id)
         
-        # Временный файл для фото
         with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_photo:
             temp_photo.write(downloaded_file)
             temp_photo_path = temp_photo.name
         
-        # Открываем изображение для получения размеров
         img = Image.open(temp_photo_path)
         width, height = img.size
         
-        # Временный файл для MP4
         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
             video_path = temp_video.name
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -57,7 +53,6 @@ def handle_photo(message):
             video.write(img_cv)
             video.release()
         
-        # Временный файл для GIF
         with tempfile.NamedTemporaryFile(delete=False, suffix='.gif') as temp_gif:
             gif_path = temp_gif.name
             clip = VideoFileClip(video_path)
@@ -78,7 +73,6 @@ def handle_photo(message):
         with open(gif_path, 'rb') as gif_file:
             bot.send_animation(message.chat.id, gif_file, reply_markup=markup)
         
-        # Удаляем временные файлы
         os.remove(temp_photo_path)
         os.remove(video_path)
         os.remove(gif_path)
@@ -97,11 +91,9 @@ def handle_text(message):
         
         file_suffix = str(message.message_id)
         
-        # Загружаем изображение фона (fon.png)
         background_path = os.path.join(os.getcwd(), 'fon.jpg')
         img = Image.open(background_path).convert('RGB')
         
-        # Проверяем размер изображения и при необходимости изменяем его
         if img.size != (300, 100):
             img = img.resize((300, 100), Image.Resampling.LANCZOS)
         
@@ -120,14 +112,12 @@ def handle_text(message):
         y = (80 - text_height) // 2
         d.text((x, y), text, fill=(0, 0, 0), font=font)
         
-        # Временный файл для фото
         with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_photo:
             temp_photo_path = temp_photo.name
             img.save(temp_photo_path)
         
         width, height = img.size
         
-        # Временный файл для MP4
         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
             video_path = temp_video.name
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -138,17 +128,14 @@ def handle_text(message):
             video.write(img_cv)
             video.release()
         
-        # Временный файл для GIF
         with tempfile.NamedTemporaryFile(delete=False, suffix='.gif') as temp_gif:
             gif_path = temp_gif.name
             clip = VideoFileClip(video_path)
             clip.write_gif(gif_path, fps=1)
         
-        # Отправляем GIF как анимацию
         with open(gif_path, 'rb') as gif_file:
             bot.send_animation(message.chat.id, gif_file)
         
-        # Удаляем временные файлы
         os.remove(temp_photo_path)
         os.remove(video_path)
         os.remove(gif_path)
